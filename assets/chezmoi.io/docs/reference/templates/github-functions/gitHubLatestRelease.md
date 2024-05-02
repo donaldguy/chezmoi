@@ -1,12 +1,12 @@
-# `gitHubLatestRelease` *owner-repo*
+# `gitHubLatestRelease` *host-owner-repo*
 
 `gitHubLatestRelease` calls the GitHub API to retrieve the latest release about
-the given *owner-repo*, returning structured data as defined by the [GitHub Go
-API
+the given *host-owner-repo*, returning structured data as defined by the [GitHub
+Go API
 bindings](https://pkg.go.dev/github.com/google/go-github/v57/github#RepositoryRelease).
 
 Calls to `gitHubLatestRelease` are cached so calling `gitHubLatestRelease` with
-the same *owner-repo* will only result in one call to the GitHub API.
+the same *host-owner-repo* will only result in one call to the GitHub API.
 
 !!! example
 

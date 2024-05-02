@@ -1,12 +1,12 @@
-# `gitHubTags` *owner-repo*
+# `gitHubTags` *host-owner-repo*
 
-`gitHubTags` calls the GitHub API to retrieve the first page of tags for
-the given *owner-repo*, returning structured data as defined by the [GitHub Go
+`gitHubTags` calls the GitHub API to retrieve the first page of tags for the
+given *host-owner-repo*, returning structured data as defined by the [GitHub Go
 API
 bindings](https://pkg.go.dev/github.com/google/go-github/v57/github#RepositoryTag).
 
 Calls to `gitHubTags` are cached so calling `gitHubTags` with the
-same *owner-repo* will only result in one call to the GitHub API.
+same *host-owner-repo* will only result in one call to the GitHub API.
 
 !!! example
 

@@ -1,12 +1,12 @@
-# `gitHubReleases` *owner-repo*
+# `gitHubReleases` *host-owner-repo*
 
 `gitHubReleases` calls the GitHub API to retrieve the first page of releases for
-the given *owner-repo*, returning structured data as defined by the [GitHub Go
-API
+the given *host-owner-repo*, returning structured data as defined by the [GitHub
+Go API
 bindings](https://pkg.go.dev/github.com/google/go-github/v57/github#RepositoryRelease).
 
 Calls to `gitHubReleases` are cached so calling `gitHubReleases` with the same
-*owner-repo* will only result in one call to the GitHub API.
+*host-owner-repo* will only result in one call to the GitHub API.
 
 !!! example
 

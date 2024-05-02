@@ -33,11 +33,15 @@ type gitHubClient struct {
 	client *github.Client
 }
 
-func newGitHubClient(ctx context.Context) *gitHubClient {
+func newGitHubClient(ctx context.Context, host string) (*gitHubClient, error) {
+	client, err := chezmoi.NewGitHubClient(ctx, http.DefaultClient, host)
+	if err != nil {
+		return nil, err
+	}
 	return &gitHubClient{
 		ctx:    ctx,
-		client: chezmoi.NewGitHubClient(ctx, http.DefaultClient),
-	}
+		client: client,
+	}, nil
 }
 
 func (c *gitHubClient) gitHubListReleases(ownerRepo string) []*github.RepositoryRelease {
@@ -99,7 +103,10 @@ func run() error {
 	templateName := path.Base(flag.Arg(0))
 	buffer := &bytes.Buffer{}
 	funcMap := sprig.TxtFuncMap()
-	gitHubClient := newGitHubClient(context.Background())
+	gitHubClient, err := newGitHubClient(context.Background(), "github.com")
+	if err != nil {
+		return err
+	}
 	funcMap["exists"] = func(name string) bool {
 		switch _, err := os.Stat(name); {
 		case err == nil:
