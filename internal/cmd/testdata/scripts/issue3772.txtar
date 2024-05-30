@@ -1,0 +1,10 @@
+# test that chezmoi add --follow adds targets in a directory if the target is a symbolic link to a directory
+symlink $HOME/.dir -> dir
+exec chezmoi add --follow $HOME/.dir
+exec find $CHEZMOISOURCEDIR
+cmp $CHEZMOISOURCEDIR/dot_dir/file golden/file
+
+-- golden/file
+# contents of file
+-- home/user/dir/file --
+# contents of file
