@@ -1091,11 +1091,11 @@ func (c *Config) destAbsPathInfos(
 	destAbsPathInfos := make(map[chezmoi.AbsPath]fs.FileInfo)
 	for _, arg := range args {
 		arg = filepath.Clean(arg)
-		destAbsPath, err := chezmoi.NewAbsPathFromExtPath(arg, c.homeDirAbsPath)
+		argDestAbsPath, err := chezmoi.NewAbsPathFromExtPath(arg, c.homeDirAbsPath)
 		if err != nil {
 			return nil, err
 		}
-		targetRelPath, err := c.targetRelPath(destAbsPath)
+		targetRelPath, err := c.targetRelPath(argDestAbsPath)
 		if err != nil {
 			return nil, err
 		}
@@ -1103,7 +1103,19 @@ func (c *Config) destAbsPathInfos(
 			options.onIgnoreFunc(targetRelPath)
 			continue
 		}
-		if options.recursive {
+		var fileInfo fs.FileInfo
+		if options.follow {
+			fileInfo, err = c.destSystem.Stat(argDestAbsPath)
+		} else {
+			fileInfo, err = c.destSystem.Lstat(argDestAbsPath)
+		}
+		switch {
+		case options.ignoreNotExist && errors.Is(err, fs.ErrNotExist):
+			continue
+		case err != nil:
+			return nil, err
+		}
+		if fileInfo.IsDir() && options.recursive {
 			walkFunc := func(destAbsPath chezmoi.AbsPath, fileInfo fs.FileInfo, err error) error {
 				switch {
 				case options.ignoreNotExist && errors.Is(err, fs.ErrNotExist):
@@ -1124,7 +1136,7 @@ func (c *Config) destAbsPathInfos(
 					return nil
 				}
 
-				if options.follow && fileInfo.Mode().Type() == fs.ModeSymlink {
+				if destAbsPath != argDestAbsPath && options.follow && fileInfo.Mode().Type() == fs.ModeSymlink {
 					fileInfo, err = c.destSystem.Stat(destAbsPath)
 					if err != nil {
 						return err
@@ -1133,23 +1145,11 @@ func (c *Config) destAbsPathInfos(
 
 				return sourceState.AddDestAbsPathInfos(destAbsPathInfos, c.destSystem, destAbsPath, fileInfo)
 			}
-			if err := chezmoi.Walk(c.destSystem, destAbsPath, walkFunc); err != nil {
+			if err := chezmoi.Walk(c.destSystem, argDestAbsPath, walkFunc); err != nil {
 				return nil, err
 			}
 		} else {
-			var fileInfo fs.FileInfo
-			if options.follow {
-				fileInfo, err = c.destSystem.Stat(destAbsPath)
-			} else {
-				fileInfo, err = c.destSystem.Lstat(destAbsPath)
-			}
-			switch {
-			case options.ignoreNotExist && errors.Is(err, fs.ErrNotExist):
-				continue
-			case err != nil:
-				return nil, err
-			}
-			if err := sourceState.AddDestAbsPathInfos(destAbsPathInfos, c.destSystem, destAbsPath, fileInfo); err != nil {
+			if err := sourceState.AddDestAbsPathInfos(destAbsPathInfos, c.destSystem, argDestAbsPath, fileInfo); err != nil {
 				return nil, err
 			}
 		}

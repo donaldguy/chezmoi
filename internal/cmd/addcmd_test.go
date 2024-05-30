@@ -292,3 +292,20 @@ func TestAddCmdSecretsError(t *testing.T) {
 		assert.Error(t, newTestConfig(t, fileSystem).execute([]string{"add", "--secrets=error", "/home/user/.secret"}))
 	})
 }
+
+func TestIssue3772(t *testing.T) {
+	chezmoitest.WithTestFS(t, map[string]interface{}{
+		"/home/user": map[string]any{
+			".dir":     &vfst.Symlink{Target: "dir"},
+			"dir/file": "contents of file\n",
+		},
+	}, func(fileSystem vfs.FS) {
+		config := newTestConfig(t, fileSystem)
+		assert.NoError(t, config.execute([]string{"add", "--follow", "/home/user/.dir"}))
+		vfst.RunTests(t, fileSystem, "",
+			vfst.TestPath("/home/user/.local/share/chezmoi/dot_dir/file",
+				vfst.TestContentsString("contents of file\n"),
+			),
+		)
+	})
+}

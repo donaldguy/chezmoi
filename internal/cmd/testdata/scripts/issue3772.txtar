@@ -1,3 +1,7 @@
+# FIXME this is really hard to fix
+# the problem is that we stat ~/.dir both in Config.destAbsPathInfos and in chezmoi.Walk
+# we need a special case where we follow the symlink in chezmoi.Walk but still treat its path as if it were a symlink to dir
+
 # test that chezmoi add --follow adds targets in a directory if the target is a symbolic link to a directory
 symlink $HOME/.dir -> dir
 exec chezmoi add --follow $HOME/.dir
