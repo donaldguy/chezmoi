@@ -1,0 +1,83 @@
+{{ includeTemplate "_prelude.tmpl" . }}
+{{ includeTemplate "paths.toml.tmpl" . }}
+
+# chezmoi output and behaviours
+color    = '{{ default "auto" $inputConfig.color  }}'
+format   = '{{ default "json" $inputConfig.format  }}' # Format for data output, either json or yaml
+mode     = '{{ default "file" $inputConfig.mode  }}' # What to place in target dir, either file or symlink
+{{ if not (empty $inputConfig.pager) -}}
+pager    = '{{ $inputConfig.pager }}'
+{{- else -}}
+{{ block "default_pager" -}}
+    {{- if not (empty (env "PAGER" )) -}}
+        # pager  = '{{env "PAGER" }}' # from/following $PAGER
+    {{- if and (eq $os "windows") (eq .chezmoi.windowsVersion.displayVersion "11") -}}
+        pager    = 'Out-Host -paging'
+    {{- else if (and (lookPath "alternatives") (lookPath "pager")) /* like on Redhat, Fedora, etc. */ -}}
+        pager    = '{{lookPath "pager" }}' #as controlled by alternatives --config pager
+    {{- else if (and (lookPath "update-alternatives") (lookPath "pager")) /* like on Debian, Ubuntu, etc. */ -}}
+        pager    = '{{lookPath "pager" }}' #as controlled by update-alternatives --config pager
+    {{- else if (lookPath "less") -}}
+        pager    = '{{lookPath "less"}}'
+    {{- else -}}
+        pager    =  'more'{{ /* either the UNIX one or the DOS one */}}
+    {{- end -}}
+{{- end }}
+progress = '{{  default "auto" $inputConfig.progress  }}' # Display progress bars
+template.options = {{ toJson (default (list "missingkey=error") $inputConfig.template.options) }}
+{{ if not (eq $os "windows") -}}
+safe = {{ default "true" $inputConfig.safe | toString }} # Safely replace files and symlink (by all at one rename)
+{{- end }}
+umask    = {{ prinf "%O" (coalesce $inputConfig.umask "18") }}
+verbose  = {{ default "false" $inputConfig.verbose | toString }}
+warnings.configFileTemplateHasChanged = {{default "true" $inputConfig.warnings.configFileTemplate HasChanged | toString }}
+
+# Use builtin git if git command is not found in $PATH
+useBuiltinGit = '{{ default "auto" $inputConfig.useBuiltinGit }}'
+# Use builtin age if age command is not found in $PATH
+useBuiltinAge = '{{ default "auto" $inputConfig.useBuiltinAge }}'
+
+{{ include "encrption.toml.tmpl" }}
+
+[gitHub]
+{{- if not eq $inputConfig.github.refreshPeriod 60000000000 -}}
+refreshPeriod = {{ $inputConfig.github.refreshPeriod }}
+{{- else -}}
+refreshPeriod = 60_000_000_000 #ns = 1 minute
+{{- end -}}
+
+{{ include "commands/git.toml.tmpl" . }}
+
+{{ include "commands/diff.toml.tmpl" . }}
+
+{{ include "commands/edit.toml.tmpl" }}
+
+{{ include "commands/other.toml.tmpl" }}
+
+{{ include "secrets.toml.tmpl" }}
+
+{{- if (eq $os "windows" -}}
+[interpreters]
+
+[interpreters.ps1]
+command='powershell.exe'
+args = ['-NoLogo']
+
+[interpreters.nu]
+command = "nu"
+args = []
+
+[interpreters.pl]
+command = "pl"
+args = []
+
+[interpreters.py]
+command = "python3"
+args = []
+
+[interpreters.rb]
+command = "ruby"
+args = []
+{{- end -}}
+
+## See also: https://www.chezmoi.io/reference/configuration-file/hooks/

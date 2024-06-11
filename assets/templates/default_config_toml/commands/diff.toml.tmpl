@@ -1,0 +1,49 @@
+[diff]
+{{ if not (empty $inputConfig.diff.command) -}}
+command   = '{{ $inputConfig.diff.command }}'
+args      = {{ toJson (default (list) $inputConfig.diff.args) }} 
+{{- else -}}
+# An external diff command: e.g. 
+{{- if eq $os "darwin" }}
+# command = '/Applications/Xcode.app/Contents/Applications/FileMerge.app'  OR
+{{- end -}}
+# command = 'difftastic' # https://github.com/Wilfred/difftastic ETC.
+# args    = []
+{{- end }}
+{{ if not (empty $inputConfig.diff.pager) -}}
+pager    = '{{ $inputConfig.diff.pager }}'
+{{- else -}}
+{{- template "default_pager" -}}
+{{- end -}}
+
+# Entry types to exclude from diffs:{{- if not (empty $inputConfig.diff.exclude) }}
+exclude        = {{ toJson $inputConfig.diff.exclude }}
+{{- else -}}e.g. :
+# exclude      = ['encrypted', 'templates']
+{{- end -}}
+scriptContents = true
+# Determine order of arguments to diff:
+reverse        = {{default "false" $inputConfig.diff.reverse | toString }}
+#  When false: 
+#   - destDir (live) version is considered the "parent"/base & srcDir (chezmoi repo)
+#     version is considered the "child"/HEAD.
+#   - you see  "red" (-) <-> local changes that chezmoi IS MISSING &
+#            "green" (+) <-> persisted additions that can be applied
+#   - fortells what will happens to your system the next time you `chezmoi apply`
+#   - reflects what is done via `chezmoi edit` (w/ default watch & apply as false)
+#
+#  When true: 
+#   - srcDir (chezmoi) is "parent"/base, & destDir (e.g. live $HOME) is HEAD/index
+#   - you see "green" (+) <-> local additions BEYOND what chezmoi has persisted, but
+#               "red" (-) <-> local
+#   - foretells what happens (to git) when you next `chezmoi add` [the file]
+#   - it matches `chezmoi cd`  + `git diff` (_after_ `chezmoi add`
+#     or `git diff --cached` if you have git.autoadd = true below)
+
+
+# to control how file contents are modified before being passed to diff.
+# you can add one or more blocks like:
+# [[textconv]]
+# pattern = #path
+# command = 
+# args = []

@@ -1,0 +1,13 @@
+{{- $ourPrefix = "chezmoi" -}}
+{{- $inputConfig = .chezmoi.config -}}
+{{- $os := .chezmoi.os -}}{{- $home  := .chezmoi.homeDir -}}
+{{- 
+$xdgDirs := dict 
+  "cacheHome"  (default (joinPath $home ".cache")          (env "XDG_CACHE_HOME" ))
+  "configHome" (default (joinPath $home ".config")         (env "XDG_CONFIG_HOME"))
+  "dataHome"   (default (joinPath $home ".local" "share")  (env "XDG_DATA_HOME"  ))
+  "stateHome"  (default (joinPath $home ".local" "state")  (env "XDG_STATE_HOME" ))
+
+  "configDirs" (default "/etc/xdg"                         (env "XDG_CONFIG_DIRS"))
+  "dataDirs"   (default "/usr/local/share/:/usr/share"     (env "XDG_DATA_DIRS"  ))
+-}}

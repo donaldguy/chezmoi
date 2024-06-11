@@ -1,0 +1,32 @@
+{{- $defaultPaths := dict
+    "cacheDir"        (joinPath (get $xdgDirs "cacheHome") $ourPrefix)
+    "destDir"         $home
+    "sourceDir"       (joinPath (get $xdgDirs "dataHome")  $ourPrefix)
+-}}
+{{- $_ := set $defaultPaths "workingTree" (get $defaultPaths "sourceDir") -}}
+{{- $_ := set $defaultPaths "persistentState" (joinPath (get $xdgDirs "configHome" $ourPrefix (cat $ourPrefix ".boltdb"))) -}}
+{{- $inputPaths := dict
+    "cacheDir"        (coalesce .chezmoi.cacheDir $inputConfig.cacheDir (get $defaultPaths "cacheDir"))
+    "destDir"         (coalesce $inputConfig.destDir (get $defaultPaths "destDir"))
+    "sourceDir"       (coalesce .chezmoi.sourceDir $inputConfig.sourceDir (get $defaultPaths "sourceDir"))
+    "workingTree"     (coalesce .chezmoi.workingTree $inputConfig.workingTree (get $defaultPaths "workingTree") )
+    "persistentState" (coalesce $inputConfig.persistentState (get $defaultPaths "persistentState"))
+-}}
+{{- $defaultPathComments := dict
+    "cacheDir"        (printf "${XDG_CACHE_HOME}/%s | you can override by running `chezmoi [init]` with --cache='some/path' $ourPrefix)
+    "destDir"         (printf                 "%25s | you can override by running `chezmoi [init]` with -D some/path | --destination='some/path'" "${HOME}")
+    "sourceDir"       (printf " ${XDG_DATA_HOME}/%s | you can override by running `chezmoi [init]` with -S some/path | --source='some/path'" $ourPrefix)
+    "workingTree"     (printf                 "%25s | you can override by running `chezmoi [init]` with -W some/path | --working-tree='some/path' "[destDir]")
+    "persistentState" (printf "${XDG_CONFIG_HOME}/%s/%s.boltdb" $ourPrefix $ourPrefix)
+-}}
+{{-
+  range $k := keys $defaultPaths
+-}}
+{{- $v := (get $inputPaths $k) -}}
+{{- $defaultV := (get $defaultPaths $k) -}}
+{{if eq $v $defaultV }}
+# {{- printf "%-17s" $k -}}= '{{- $defaultV }}'
+# {{ get defaultPathComments $k }}
+{{- else -}}
+{{printf "%-19s" $p }}= '{{ $v }}'
+{{- end -}}

@@ -1,0 +1,56 @@
+[add]
+encrypt = {{ default "false" $inputConfig.add.encrypt | toString }} 
+secrets = '{{ default "warning" $inputConfig.add.sectrets }}
+templateSymlinks = {{ default "false" $inputConfig.add.templateSymlinks | toString }}  
+
+{{ if not (empty $inputConfig.cd.command) -}}
+[cd]
+command = '{{ $inputConfig.cd.command }}'
+args    = {{ toJson (default (list) $inputConfig.cd.args) }}
+{{- else -}}
+# [cd]
+# Subshell to run in cd command
+{{- $defaultShell := dict "darwin" "/bin/zsh" "linux" "/bin/bash" "windows" "powershell.exe" }}
+# command = '{{coalesce (env "SHELL") (env "ComSpec) (get $defaultShell $os)}}'
+# args    = []
+{{- end -}}
+
+[completion]
+custom = {{ default "false" $inputConfig.completion.custom | toString }}
+
+{{- if not (empty $inputConfig.merge.command) -}}
+[merge]
+command = '{{ $inputConfig.merge.command }}'
+args    = {{ toJson (default (list) $inputConfig.merge.args) }}
+{{- else -}}
+# [merge]
+# Set a 3-way merge command
+# command = 'vimdiff'
+# args = []
+{{- end -}}
+
+{{- if not (empty $inputConfig.secret.command) -}}
+[secret]
+command = '{{ $inputConfig.secret.command }}'
+args    = {{ toJson (default (list) $inputConfig.secret.args) }}
+{{- else - }}
+# [secret]
+# command = ''
+# args    = []
+{{- end -}}
+
+[status]
+exclude = []
+pathStyle = '{{ default "relative" $inputConfig.status.pathStyle }}'
+
+[update]
+apply             = true
+recurseSubmodules = true
+{{- if not (empty $inputConfig.update.command) -}}
+command           = '{{$inputConfig.update.command}}'
+{{- else -}}
+# command         = ''
+
+[verify]
+exclude = {{ toJson (default (list) $inputConfig.verify.exclude) }}
+

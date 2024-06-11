@@ -1,0 +1,33 @@
+[edit]
+{{ if not (empty $inputConfig.edit.command) -}}
+command   = '{{ $inputConfig.edit.command }}'
+args      = {{ toJson (default (list) $inputConfig.edit.args) }} 
+{{- else -}}
+    {{- if not (empty (env "VISUAL" )) -}}
+        # command = '{{env "VISUAL" }}' # from/following $VISUAL
+    {{- else if not (empty (env "EDITOR" )) -}}
+        # command = '{{env "EDITOR" }}' # from/following $EDITOR
+    {{- else if (and (lookPath "alternatives") (lookPath "editor")) /* like on Redhat, Fedora, etc. */ -}}
+        editor    = '{{lookPath "editor" }}' # as controlled by alternatives --config editor
+    {{- else if (and (lookPath "update-alternatives") (lookPath "editor")) /* like on Debian, Ubuntu, etc. */ -}}
+        editor    = '{{lookPath "editor" }}' # as controlled by update-alternatives --config editor
+    {{- else if (eq $os "windows" }}
+        editor    = 'notepad.exe'
+    {{- else -}}
+        editor    = 'vi'
+    {{- end }}
+# args    = []
+{{- end -}}
+# whether to immediately 'chezmoi apply' changes to file on exit
+apply       = {{default "false" $inputConfig.warnings.configFileTemplateHasChanged | toString }} #!apply_on_exit
+# Whether to automatically 'chezmoi apply' changes when files are saved in editor 
+watch       = {{default "false" $inputConfig.warnings.configFileTemplateHasChanged | toString }} #!apply_on_save
+{{ if not eq $inputConfig.edit.minDuration 1000000000 -}}
+minDuration = {{ $inputConfig.edit.minDuration }}
+{{- else -}}
+minDuration = 1_000_000_000 #ns = 1 second
+{{- end -}}
+hardlink    = true 
+# Invoke editor with a hardlink to the source file:
+#   When true: file (base)names seen by editor will be "as intended for use", proxied by filesystem through a temp dir
+#   When false: work directly in your srcDir, editor gets e.g. `dot_` prefix.

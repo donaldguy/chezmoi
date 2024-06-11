@@ -1,0 +1,23 @@
+[git]
+autoAdd  = {{ coalesce $inputConfig.git.autoPush $inputConfig.git.autoCommit $inputConfig.git.autoAdd "false" | toString }} 
+    # if true: automatically `git add` changes to the srcDir's index after `chezmoi {edit, add`}
+autoCommit = {{ coalesce $inputConfig.git.autoPush $inputConfig.git.autoCommit "false" | toString }}  
+    # if true: # (Also) `git commit` locally, (w/ message templated from:
+    #     commitMessageTemplateFile xor commitMessageTemplate if set below;
+    #     or 
+    #  https://github.com/twpayne/chezmoi/blob/{{.chezmoi.version.version }}/assets/templates/COMMIT_MESSAGE.tmpl
+autoPush = {{ coalesce $inputConfig.git.autoPush "false" | toString }} 
+    # if true: (Also also) push to configured remote tracking branch
+
+{{- if not (empty $inputConfig.git.commitMessageFile) -}}
+commitMessageTemplateFile = '{{ $inputConfig.git.commitMessageTemplateFile }}'
+{{- else if not (empty $inputConfig.git.commitMessageTemplate) -}}
+commitMessageTemplate     = '{{ $inputConfig.git.commitMessageTemplate }}'
+{{- else -}}
+# File-based commit message template (path relative to srcDir), e.g. 
+#   commitMessageTemplateFile = '.commit_message.tmpl'
+# String-based commit message template e.g.
+#   commitMessageTemplate = "{{ printf "%spromptString \\\"Commit message\\\"%s" "{{" "}}" }}"
+
+# override the command used for git operations
+# command = '{{  default "git" $inputConfig.git.command  }}'

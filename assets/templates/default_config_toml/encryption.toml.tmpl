@@ -1,0 +1,75 @@
+{{- $encrption := (coalesce .chezmoi.encrption $inputConfig.encrption "") -}}
+{{- if (eq $encrption "age") -}}
+encryption  = 'age' 
+
+[age]
+{{- if not (empty $inputConfig.age.command) -}}
+command         = '{{ $inputConfig.age.command }}'
+args            = {{ toJson (default (list) $inputConfig.age.args) }}
+{{- else -}}
+# command       = 'age'
+# args          = []
+{{- end -}}
+{{- if not (empty $inputConfig.age.identity) -}}
+identity    = '{{$inputConfig.age.identity}}'
+{{- else -}}
+identities       = {{ toJson (default (list) $inputConfig.age.identities) }}
+{{- end -}}
+passphrase   = {{ default "false" $inputConfig.age.passphrase  | toString }}
+{{- if not (empty $inputConfig.age.recepient) -}}
+recepient        = '{{$inputConfig.age.recepient}}'
+{{- else if not (empty $inputConfig.age.recepients) -}}
+recipients       = {{ toJson ($inputConfig.age.recipients) }}
+{{- else -}}
+# recepients      = []
+{{- end -}}
+{{- if not (empty $inputConfig.age.recepientFile) -}}
+recipientFile     = '{{$inputConfig.age.recipientFile}}'
+{{- else if not (empty $inputConfig.age.recipientsFiles) -}}
+recipientsFiles   = {{ toJson ($inputConfig.age.recipientsFiles) }}
+{{- else -}}
+# recepientsFiles = []
+{{- end -}}
+symmetric    = {{ default "false" $inputConfig.age.symmetric  | toString }} 
+suffix = '{{ default ".age" $inputConfig.age.suffix }}'
+{{- else if (eq $encrption "age") -}}
+encryption   = 'gpg' 
+
+[gpg]
+{{- if not (empty $inputConfig.gpg.command) -}}
+command      = '{{ $inputConfig.gpg.command }}'
+args         = {{ toJson (default (list) $inputConfig.gpg.args) }}
+{{- else -}}
+# command    = 'gpg'
+# args       = []
+{{- end -}}
+{{- if not (empty $inputConfig.gpg.recepient) -}}
+recepient    = '{{$inputConfig.gpg.recepient}}'
+{{- else if not (empty $inputConfig.gpg.recepients) -}}
+recipients   = {{ toJson ($inputConfig.age.recipients) }}
+{{- else -}}
+# recepients = []
+{{- end -}}
+suffix       = '.asc'
+symmetric    = {{ default "false" $inputConfig.gpg.symmetric | toString }} 
+
+{{- else -}}
+# encryption      = '' # 'age' or 'gpg'
+
+# [age]
+# command         = 'age'
+# args            = []
+# identities      = []
+# passphrase      = false
+# recepients      = []
+# recepientsFiles = []
+# symmetric       = false
+# suffix          = '.age'
+
+# [gpg]
+# command         = 'gpg'
+# args            = []
+# recepients      = []
+# symmetric       = false
+# suffix          = '.asc'
+{{- end -}}
